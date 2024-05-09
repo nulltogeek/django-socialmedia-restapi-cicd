@@ -6,13 +6,19 @@ from django.contrib.auth.models import BaseUserManager as BUM
 from django.contrib.auth.models import PermissionsMixin
 
 
-
+# this class is inherited from BaseUserManager to create user and superuser
 class BaseUserManager(BUM):
+
+    # create a normal user
     def create_user(self, email, is_active=True, is_admin=False, password=None):
         if not email:
             raise ValueError("Users must have an email address")
 
-        user = self.model(email=self.normalize_email(email.lower()), is_active=is_active, is_admin=is_admin)
+        user = self.model(
+            email=self.normalize_email(email.lower()),
+            is_active=is_active,
+            is_admin=is_admin,
+        )
 
         if password is not None:
             user.set_password(password)
@@ -24,6 +30,7 @@ class BaseUserManager(BUM):
 
         return user
 
+    # create a normal superuser
     def create_superuser(self, email, password=None):
         user = self.create_user(
             email=email,
@@ -38,14 +45,15 @@ class BaseUserManager(BUM):
         return user
 
 
+# a base user class for all users
 class BaseUser(BaseModel, AbstractBaseUser, PermissionsMixin):
 
-    email = models.EmailField(verbose_name = "email address",
-                              unique=True)
+    email = models.EmailField(verbose_name="email address", unique=True)
 
     is_active = models.BooleanField(default=True)
     is_admin = models.BooleanField(default=False)
 
+    # when you want to get user or users from database
     objects = BaseUserManager()
 
     USERNAME_FIELD = "email"
@@ -66,9 +74,3 @@ class Profile(models.Model):
 
     def __str__(self):
         return f"{self.user} >> {self.bio}"
-
-
-
-
-
-
