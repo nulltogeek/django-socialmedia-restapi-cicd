@@ -45,7 +45,7 @@ class PostApi(ApiAuthMixin, APIView):
             )
 
         def get_author(self, post):
-            return post.author.username
+            return post.author.email
 
         def get_url(self, post):
             request = self.context.get("request")
@@ -79,6 +79,7 @@ class PostApi(ApiAuthMixin, APIView):
     @extend_schema(responses=OutputSerializer, parameters=[FilterSerializer])
     def get(self, request):
         filters_serializer = self.FilterSerializer(data=request.query_params)
+        print(request.query_params)
         filters_serializer.is_valid(raise_exception=True)
 
         try:

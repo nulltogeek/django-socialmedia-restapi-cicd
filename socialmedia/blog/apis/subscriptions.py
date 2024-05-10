@@ -31,11 +31,11 @@ class SubscribeApi(ApiAuthMixin, APIView):
         email = serializers.CharField()
 
     class OutputSerializer(serializers.Serializer):
-        email = serializers.CharField()
+        subscriber = serializers.CharField()
 
     class Meta:
         model = Subscription
-        fields = ("email",)
+        fields = ("subscriber",)
 
     def get_username(self, subscription):
         return subscription.target.email
@@ -46,6 +46,7 @@ class SubscribeApi(ApiAuthMixin, APIView):
         query = get_subscribers(user=user)
         return get_paginated_response(
             request=request,
+            serializer_class=self.OutputSerializer,
             pagination_class=self.Pagination,
             queryset=query,
             view=self,
@@ -61,8 +62,13 @@ class SubscribeApi(ApiAuthMixin, APIView):
             query = subscribe(
                 user=request.user, email=serializer.validated_data["email"]
             )
+            print(query)
         except Exception as ex:
             return Response(
                 {"detail": "Database Error -" + str(ex)},
                 status=status.HTTP_500_INTERNAL_SERVER_ERROR,
             )
+
+        output_serializer = self.OutputSerializer(query)
+        print(output_serializer.data)
+        return Response(output_serializer.data)
