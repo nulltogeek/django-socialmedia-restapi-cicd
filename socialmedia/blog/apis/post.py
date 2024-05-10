@@ -1,3 +1,5 @@
+from django.urls import reverse
+
 from socialmedia.api.pagination import (
     LimitOffsetPagination,
     get_paginated_response_context,
