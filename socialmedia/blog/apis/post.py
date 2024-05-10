@@ -6,8 +6,8 @@ from socialmedia.api.pagination import (
 )
 from socialmedia.blog.models import Post
 from socialmedia.api.mixins import ApiAuthMixin
-from socialmedia.blog.services import create_post
-from socialmedia.blog.selectors import post_list, post_detail
+from socialmedia.blog.services.post import create_post
+from socialmedia.blog.selectors.posts import post_list, post_detail
 
 from rest_framework import serializers, status
 from rest_framework.views import APIView
