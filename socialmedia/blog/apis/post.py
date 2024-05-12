@@ -29,8 +29,8 @@ class PostApi(ApiAuthMixin, APIView):
         content = serializers.CharField(max_length=255, required=False)
 
     class InputSerializer(serializers.Serializer):
-        title = serializers.CharField(max_length=255)
         content = serializers.CharField(max_length=255)
+        title = serializers.CharField(max_length=255)
 
     class OutputSerializer(serializers.ModelSerializer):
         author = serializers.SerializerMethodField("get_author")
@@ -53,8 +53,8 @@ class PostApi(ApiAuthMixin, APIView):
             return request.build_absolute_uri(path)
 
     @extend_schema(
-        request=InputSerializer,
         responses=OutputSerializer,
+        request=InputSerializer,
     )
     def post(self, request):
         serializer = self.InputSerializer(data=request.data)
@@ -62,9 +62,8 @@ class PostApi(ApiAuthMixin, APIView):
         try:
             query = create_post(
                 user=request.user,
-                # might have a bug
-                content=serializer.validated_data["content"],
-                title=serializer.validated_data["title"],
+                content=serializer.validated_data.get("content"),
+                title=serializer.validated_data.get("title"),
             )
         except Exception as ex:
             return Response(
@@ -79,7 +78,6 @@ class PostApi(ApiAuthMixin, APIView):
     @extend_schema(responses=OutputSerializer, parameters=[FilterSerializer])
     def get(self, request):
         filters_serializer = self.FilterSerializer(data=request.query_params)
-        print(request.query_params)
         filters_serializer.is_valid(raise_exception=True)
 
         try:

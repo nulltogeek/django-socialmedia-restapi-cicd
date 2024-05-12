@@ -24,12 +24,18 @@ def post_list(
     *, filters=None, user: BaseUser, self_include: bool = True
 ) -> QuerySet[Post]:
     filters = filters or {}
-    subscriptions = list(
-        Subscription.objects.filter(subscriber=user).values_list("target", flat=True)
-    )
-    if self_include:
-        subscriptions.append(user.id)
-    if subscriptions:
-        qs = Post.objects.filter(author_id__in=subscription)
-        return PostFilter(filters, qs).qs
+    subscriptions = []
+    try:
+        subscriptions.extend(
+            Subscription.objects.filter(subscriber=user).values_list("target", flat=True)
+        )
+        if self_include:
+            subscriptions.append(user.id)
+        if subscriptions:
+            qs = Post.objects.filter(author__in=subscriptions)
+            return PostFilter(filters, qs).qs
+    except Exception as e:
+        # Handle the exception gracefully, e.g., log the error
+        print(f"An error occurred: {e}")
     return Post.objects.none()
+
