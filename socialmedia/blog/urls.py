@@ -7,7 +7,7 @@ app_name = "blog"
 urlpatterns = [
     path("subscribe/", SubscribeApi.as_view(), name="subscribe"),
     path(
-        "subscribe/<str:email>/",
+        "unsubscribe/<str:email>/",
         SubscribeDetailApi.as_view(),
         name="subscribe-detail",
     ),

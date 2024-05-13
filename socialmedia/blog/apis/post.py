@@ -117,7 +117,7 @@ class PostDetailApi(ApiAuthMixin, APIView):
             )
 
         def get_author(self, post):
-            return post.author.username
+            return post.author.email
 
         def get_url(self, post):
             request = self.context.get("request")
@@ -128,9 +128,10 @@ class PostDetailApi(ApiAuthMixin, APIView):
     def get(self, request, slug):
         try:
             query = post_detail(
-                slu=slug,
-                user=user.request,
+                slug=slug,
+                user=request.user,
             )
+            print()
         except Exception as ex:
             return Response(
                 {"detail": "Filter Error -" + str(ex)},

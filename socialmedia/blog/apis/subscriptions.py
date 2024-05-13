@@ -12,9 +12,9 @@ from drf_spectacular.utils import extend_schema
 
 
 class SubscribeDetailApi(ApiAuthMixin, APIView):
-    def delete(self, request, username):
+    def delete(self, request, email):
         try:
-            unsubscribe(user=request.user, username=username)
+            unsubscribe(user=request.user, email=email)
         except Exception as ex:
             return Response(
                 {"detail": "Database Error -" + sre(ex)},
