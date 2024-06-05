@@ -1,0 +1,85 @@
+version: "3.9"
+networks:
+    default:
+        external:
+            name: web_net
+
+services:
+    db:
+        image: docker.nulltogeek.site/database/postgres:14.1
+        container_name: postgres
+        ports:
+            - 5432:5432
+        environment:
+            - POSTGRES_DB=socialmedia
+            - POSTGRES_USER=user
+            - POSTGRES_PASSWORD=password
+
+    rabbitmq:
+        image: docker.nulltogeek.site/databases/rabbitmq:alpine
+        healthcheck:
+            test: rabbitmq-diagnostics -q ping
+            interval: 30s
+            timeout: 30s
+            retries: 3
+
+    redis:
+        image: docker.nulltogeek.site/databases/redis:7
+        volumes:
+            - redis-data:/data
+
+    django:
+        image: docker.nulltogeek.site/backend/backend:latest
+        command: gunicorn config.wsgi:application -b 0.0.0.0:8000
+        environment:
+            - DATABASE_URL=psql://user:password@db:5432/socialmedia
+            - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+            - SECRET_KEY=&_q)2kw7v%-1!*@7axjsd_%*%@#ba-0o+at(sgc&0ulmy_2-p6
+            - ALLOWED_HOSTS=["api.nulltogeek.site"]
+        volumes:
+            - .:/app
+        ports:
+            - "8000:8000"
+        depends_on:
+            - db
+            - rabbitmq
+        restart: on-failure
+        labels:
+            - "traefik.enable=true"
+            - "traefik.docker.network=web_net"
+            - "traefik.http.routers.backend.entrypoints=http"
+            - "traefik.http.routers.backend.rule=Host(`api.nulltogeek.site`)"
+            - "traefik.http.routers.backend.service=backend-secure"
+            - "traefik.http.routers.backend.middlewares=https-redirect"
+            - "traefik.http.routers.backend-secure.entrypoints=https"
+            - "traefik.http.routers.backend-secure.rule=Host(`api.nulltogeek.site`)"
+            - "traefik.http.routers.backend-secure.tls=true"
+            - "traefik.http.routers.backend-secure.tls.options=default"
+            - "traefik.http.routers.backend-secure.tls.certresolver=mycert"
+            - "traefik.http.routers.backend-secure.service=backend-secure"
+            - "traefik.http.services.backend-secure.loadbalancer.server.port=8000"
+
+    celery:
+        image: docker.nulltogeek.site/backend/backend:latest
+        command: celery -A socialmedia.tasks worker -l info --without-gossip --without-mingle --without-heartbeat
+        environment:
+            - DATABASE_URL=psql://user:password@db:5432/socialmedia
+            - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+        volumes:
+            - .:/app
+        depends_on:
+            - db
+            - rabbitmq
+        restart: on-failure
+
+    beats:
+        command: celery -A socialmedia.tasks beat -l info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+        environment:
+            - DATABASE_URL=psql://user:password@db:5432/socialmedia
+            - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
+        volumes:
+            - .:/app
+        depends_on:
+            - db
+            - rabbitmq
+        restart: on-failure
