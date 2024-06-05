@@ -4,6 +4,7 @@ from socialmedia.blog.models import Subscription, Post
 from django.db import transaction
 from django.db.models import QuerySet
 from django.utils.text import slugify
+from django.core.cache import cache
 
 
 def count_follower(*, user: BaseUser) -> int:
@@ -18,17 +19,28 @@ def count_posts(*, user: BaseUser) -> int:
     return Post.objects.filter(author=user).count()
 
 
+def cache_profile(*, user: BaseUser) -> None:
+    profile = {
+        "post_count": count_posts(user=user),
+        "follower_count": count_follower(user=user),
+        "following_count": count_following(user=user),
+    }
+    cache.set(f"profile_{user}", profile, timeout=None)
+
+
 def subscribe(*, user: BaseUser, email: str) -> QuerySet[Subscription]:
     target = BaseUser.objects.get(email=email)
     sub = Subscription(subscriber=user, target=target)
     sub.full_clean()
     sub.save()
+    cache_profile(user=user)
     return sub
 
 
 def unsubscribe(*, user: BaseUser, email: str) -> dict:
     target = BaseUser.objects.get(email=email)
     Subscription.objects.get(subscriber=user, target=target).delete()
+    cache_profile(user=user)
 
 
 @transaction.atomic
