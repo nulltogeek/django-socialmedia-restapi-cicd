@@ -30,16 +30,20 @@ services:
 
     django:
         image: docker.nulltogeek.site/backend/backend:latest
-        command: gunicorn config.wsgi:application -b 0.0.0.0:8000
+        command: >
+            sh -c "python manage.py migrate && 
+            python manage.py collectstatic --no-input --clear &&
+            gunicorn config.wsgi:application --bind 0.0.0.0:8000
+            "
         environment:
             - DATABASE_URL=psql://user:password@db:5432/socialmedia
             - CELERY_BROKER_URL=amqp://guest:guest@rabbitmq:5672//
             - SECRET_KEY=&_q)2kw7v%-1!*@7axjsd_%*%@#ba-0o+at(sgc&0ulmy_2-p6
             - ALLOWED_HOSTS=["api.nulltogeek.site"]
         volumes:
-            - .:/app
-        ports:
-            - "8000:8000"
+            - static_volume:/app/backend/staticfiles
+            - media_volume:/app/backend/media
+            - .:/app/backend_api
         depends_on:
             - db
             - rabbitmq
@@ -83,3 +87,8 @@ services:
             - db
             - rabbitmq
         restart: on-failure
+
+volumes:
+    redis-data:
+    static_volume:
+    media_volume:
