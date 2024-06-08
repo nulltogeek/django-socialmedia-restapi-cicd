@@ -9,9 +9,9 @@ DAY=`date +%Y-%m-%d`
 NOW="$(date +"%Y-%m-%d_%H-%M-%S")"
 
 # Variable Section -------------------------------------------
-DOMAIN_NAME=nulltogeek13.com
+DOMAIN_NAME=nulltogeek.com
 HostName=$DOMAIN_NAME
-SSH_PORT=22822
+SSH_PORT=22
 BAC_DIR=/opt/backup/files_$NOW
 
 # docker config destination
@@ -218,9 +218,7 @@ systemctl is-active --quiet sshd && echo -e "\e[1m \e[96m sshd service: \e[30;48
 
 #Copy Public Key -------------------------------------------
 cat <<EOT >> /root/.ssh/authorized_keys
-# nulltogeek
 ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCq+NuakOI8CEfwIfcLcfMsKh6GEsJPyI03okmEyBnl9iNsB4gUTzJhr+Rtm+ZdpqI3WrM7Co0/2NoSpdxfCOcUMeFBFQZDlkRO5DO5ShHlj0Z9qOWB/wRTDNInXccVd8tsOYD7iAh/hgW235YxkMHUTPJ27hsd0BK2hCD7S+WgGYoayrfJkMc93nu7ytK4BSP6EpZeEpbbnwk1S7XX+bUcGhUCFXPG8O7O5Bm+C0wXyT6oZxJR7EgzBceA6pKVfuyTA1oen5w7C0jkOccm5Ufj8gq7nJlD+cxuUWDbT1M4F7xIB9P73XU0vqReeE3tHGVHsIJ24xoP/vu2ccxioBNT9Dlh9T9d4FxJ492Sl3+oUAiNVZlWZ0WCXvVH+psEFCgh7IJlb5ua1k2Vh1vwGMOFudYYJ9RCDOmYfDO9Pe0ZobP3UmvYjPb8rcZIGEpZqAr0ya6/zilSnJ+/Qc/4uP5WAGiYCIJW/r2mnuswpdMoi5l1oD/1xoYdvlu/PLW3QejBnvaO7gLpLsDOOlNCHJovIhquSbsPf/kz36tzOXrpsc3PQWYSzQV7kfzR/x35a78ZdRuAjRSEEwo96hdodK/Sl+CSFfPDs+3FEoVq2EMn8HX3rrtvm7pXo0jCIp/3MdVTZRyOZKxsg55f5b59jV13D9Ba1kIm1/iaNdMAXpPc0w== alireza.moghise.dev@gmail.com
-
 EOT
 
 # fail2ban config -----------------------------------------
@@ -379,7 +377,7 @@ curl https://store.dockerme.ir/Software/bashrc -o /root/.bashrc
 # lynis audit tools for Hardening check --------------------------------------------
 if [ ! -d  "/opt/lynis" ]
 then
-   curl https://downloads.cisofy.com/lynis/lynis-3.0.6.tar.gz -o /opt/lynis.tar.gz
+   curl https://downloads.cisofy.com/lynis/lynis-3.1.1.tar.gz -o /opt/lynis.tar.gz
    cd /opt ; tar -xzf lynis.tar.gz ; rm -rf /opt/lynis.tar.gz
 fi
 cd /opt/lynis
